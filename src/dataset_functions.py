@@ -4,7 +4,8 @@ import torch
 from torch.utils.data import Dataset
 from skimage import io
 from torchvision import transforms
-
+import matplotlib.pyplot as plt
+from torchvision import utils
 class TrafficSignsDataset(Dataset):
     """
     Custom Dataset for the Traffic Sign Dataset - GTSRB
@@ -163,6 +164,54 @@ def get_mean_std_custom_dataset(loader):
 		cnt += nb_pixels
 
 	mean, std = fst_moment, torch.sqrt(
-		snd_moment - fst_moment ** 2)        
+		snd_moment - fst_moment ** 2)    
+        
 	return mean,std
 
+
+def calculate_mean_std_custom_dataset():
+    data_transform = transforms.Compose([
+            ConvertPIL(),
+            Rescale((32, 32)),
+            ToTensor()
+    ])
+
+    dataset = TrafficSignsDataset(annotations_file='../../dataset/GTSRB/Train.csv', 
+                            root_dir='../../dataset/GTSRB',
+                            transform=data_transform)
+
+    dataset_loader = torch.utils.data.DataLoader(dataset,
+                                            batch_size=64,
+                                            shuffle=False,
+                                            num_workers=4)
+
+    mean, std = get_mean_std_custom_dataset(dataset_loader)
+    print(mean, std)
+    # TODO: Export mean and std to be able to skip this step everytime this is run
+    return mean, std
+
+
+def show_traffic_signs(sample_batched):
+    """Show traffic signs for a batch of samples."""
+    images_batch = sample_batched['image']
+    batch_size = len(images_batch)
+    im_size = images_batch.size(2)
+    grid_border_size = 2
+
+    grid = utils.make_grid(images_batch)
+    plt.imshow(grid.numpy().transpose((1, 2, 0)))
+
+    plt.title('Batch from dataloader')
+
+
+def plot_gtsrb_dataset_images(loader):
+    for i_batch, sample_batched in enumerate(loader):
+        # print(i_batch, sample_batched['image'].size())
+        # observe 1st batch and stop.
+        if i_batch == 1:
+            plt.figure()
+            show_traffic_signs(sample_batched)
+            plt.axis('off')
+            plt.ioff()
+            plt.show()
+            break
