@@ -6,6 +6,7 @@ from skimage import io
 from torchvision import transforms
 import matplotlib.pyplot as plt
 from torchvision import utils
+
 class TrafficSignsDataset(Dataset):
     """
     Custom Dataset for the Traffic Sign Dataset - GTSRB
@@ -45,13 +46,6 @@ class TrafficSignsDataset(Dataset):
     
     def get_classes(self):
         return self.img_labels.unique()
-
-
-############################################################################################################################################
-############################################################################################################################################
-############################################################################################################################################
-############################################################################################################################################
-############################################################################################################################################
 
 
 class ConvertPIL(object):
@@ -169,16 +163,16 @@ def get_mean_std_custom_dataset(loader):
 	return mean,std
 
 
-def calculate_mean_std_custom_dataset():
+def calculate_mean_std_custom_dataset(dataset_path):
     data_transform = transforms.Compose([
             ConvertPIL(),
             Rescale((32, 32)),
             ToTensor()
     ])
 
-    dataset = TrafficSignsDataset(annotations_file='../../dataset/GTSRB/Train.csv', 
-                            root_dir='../../dataset/GTSRB',
-                            transform=data_transform)
+    dataset = TrafficSignsDataset(annotations_file=os.path.join(dataset_path, 'Train.csv'), 
+                                root_dir=dataset_path,
+                                transform=data_transform)
 
     dataset_loader = torch.utils.data.DataLoader(dataset,
                                             batch_size=64,
