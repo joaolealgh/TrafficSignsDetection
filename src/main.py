@@ -7,9 +7,6 @@ from torch.utils.data import Subset, DataLoader
 import argparse
 from dotenv import load_dotenv
 
-# import sys
-# sys.path.append("..") # Adds higher directory to python modules path.
-
 from train import train_all_epochs, test
 from dataset_functions import *
 from model import CustomCNN
@@ -104,7 +101,7 @@ def train_model(device, plot_dataset, dataset_path):
 
 def test_model(model_path, device, plot_dataset, dataset_path):
     if CALCULATE_MEAN_STD:
-        mean, std = calculate_mean_std_custom_dataset()
+        mean, std = calculate_mean_std_custom_dataset(dataset_path)
     else:
         mean = torch.tensor([0.3403, 0.3121, 0.3214])
         std = torch.tensor([0.2724, 0.2608, 0.2669])
@@ -129,10 +126,12 @@ def test_model(model_path, device, plot_dataset, dataset_path):
     if plot_dataset:
         plot_gtsrb_dataset_images(test_dataset_loader)
 
-
-    net = torch.load(model_path)
+    num_classes = len(test_traffic_dataset.get_classes())
+    net = CustomCNN(num_classes=num_classes)
+    net.load_state_dict(torch.load(model_path))
     net.to(device)
-
+    net.eval()
+ 
     test(net, device, test_dataset_loader)
 
 
